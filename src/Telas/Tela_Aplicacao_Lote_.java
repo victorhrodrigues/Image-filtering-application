@@ -14,6 +14,7 @@ import Processamento.Processamento_Imagem_;
 /**
  * @author João Victor do Rozário Recla - 2022/2
  * @author Lucas Sala Alves - 2025/1
+ * @author Victor Henrique Rodrigues - 2026/1
  */
 public class Tela_Aplicacao_Lote_ extends javax.swing.JFrame {
     public Tela_Espaco_cor telaEspacoCor;
@@ -21,7 +22,17 @@ public class Tela_Aplicacao_Lote_ extends javax.swing.JFrame {
     
     // Nome do metodo a ser aplicado.
     public String Metodo_nome      = "_";
+    
+    /**
+     * 1 = Otsu
+     * 2 = Fuzzy Huang
+     * 3 = Filtro Mediano Adaptativo Cinza
+     * 4 = Filtro Mediano Adaptativo Colorido YIQ
+     */
     public int    Segmentacao_tipo = 0;
+    
+    // tamanho de janela de vizinhança máxima
+    public int wMax = 39;
    
     // Atributos.
     private int Qnt_imagens;
@@ -355,11 +366,38 @@ public class Tela_Aplicacao_Lote_ extends javax.swing.JFrame {
                                         Img_Processada = Processamento_Imagem_.YCbCr(Img_Processada, telaEspacoCor);
                                     if(telaEspacoCor.Deteccao_tipo < 1)
                                         Img_Processada = Processamento_Imagem_.XYZ(Img_Processada, telaEspacoCor);    
-                                }else
-                                    Img_Processada = Processamento_Imagem_.Segment_(Img_original, Segmentacao_tipo);
-                                                           
+                                }else{
+                                    // Adição dos filtros adaptativos
+                                    if (Segmentacao_tipo == 1 || Segmentacao_tipo == 2) {
+                                        Img_Processada = Processamento_Imagem_.Segment_(Img_original, Segmentacao_tipo);
+                                    } else if (Segmentacao_tipo == 3) {
+                                        // Filtro Adaptativo em Escala de Cinza
+                                        Img_Processada = Processamento_Imagem_.AdaptiveMedianCinza(Img_original, wMax);
+                                    } else if (Segmentacao_tipo == 4) {
+                                        // Filtro Adaptativo Colorido (Canal Y do Espaço YIQ)
+                                        Img_Processada = Processamento_Imagem_.FiltrarEConvertYIQ(Img_original, wMax);
+                                    }
+                                }        
+                                
+                                // Correção do sistema de remoção de extensão para nomeclatura de arquivo     
+                                String nomeCompleto = Arquivos.getName();
+                                int indicePonto = nomeCompleto.lastIndexOf('.');
+                                String apenasNome = (indicePonto > 0) ? nomeCompleto.substring(0, indicePonto) : nomeCompleto;
+                                
+                                // manter como era feito a nomeclatura para (Otsu/Fuzzy)
+                                String sufixoTecnica = Metodo_nome;
+                                
+                                // correção para padrão sufixo passado pelo professor
+                                if (Segmentacao_tipo == 3) {
+                                    // Filtro Adaptativo em Tons de Cinza: ex _AdaptiveMedian39x39
+                                    sufixoTecnica = "_AdaptiveMedian" + wMax + "x" + wMax;
+                                } else if (Segmentacao_tipo == 4) {
+                                    // Filtro Adaptativo Colorido YIQ: ex _AdaptiveMedian39x39YIQ
+                                    sufixoTecnica = "_AdaptiveMedian" + wMax + "x" + wMax + "YIQ";
+                                }
+                                
                                 // Salva a imagem processada.
-                                File Fo = new File(Pasta_destino.getPath() +"/" +Arquivos.getName().substring(0, Arquivos.getName().length() - 4) +Metodo_nome +".png");
+                                File Fo = new File(Pasta_destino.getPath() + "/" + apenasNome + sufixoTecnica + ".png");
                                 ImageIO.write(Img_Processada, "png", Fo);
                                 Qnt_imgs_processadas++;
                                 

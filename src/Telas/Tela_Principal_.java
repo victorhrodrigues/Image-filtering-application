@@ -272,6 +272,11 @@ public class Tela_Principal_ extends javax.swing.JFrame {
 
         jMenuItem2.setFont(new java.awt.Font("Liberation Sans", 1, 14)); // NOI18N
         jMenuItem2.setText("Aplicar em lote");
+        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem2ActionPerformed(evt);
+            }
+        });
         Menu_Adaptative_Color_.add(jMenuItem2);
 
         jMenuItem10.setFont(new java.awt.Font("Liberation Sans", 1, 14)); // NOI18N
@@ -698,7 +703,15 @@ public class Tela_Principal_ extends javax.swing.JFrame {
 
 
     private void Aplicar_Lote_ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Aplicar_Lote_ActionPerformed
-        Tela_Espaco_cor Tela = new Tela_Espaco_cor(this,true);
+        // 1. Pergunta o wMax uma única vez antes de abrir a janela do lote
+        String input = JOptionPane.showInputDialog(this, "Digite o w_max para o lote em escala de cinza:", "Filtro em Lote", JOptionPane.QUESTION_MESSAGE);
+        if(input == null || input.trim().isEmpty()) return;
+
+        int wMaxEscolhido = Integer.parseInt(input.trim());
+
+        Tela_Aplicacao_Lote_ Tela = new Tela_Aplicacao_Lote_();
+        Tela.Segmentacao_tipo = 3; // ID do Filtro Adaptativo Cinza
+        Tela.wMax = wMaxEscolhido; // Passa o tamanho da vizinhança
         Tela.setLocationRelativeTo(null);
         Tela.setVisible(true);
     }//GEN-LAST:event_Aplicar_Lote_ActionPerformed
@@ -966,6 +979,19 @@ public class Tela_Principal_ extends javax.swing.JFrame {
         JOptionPane.showMessageDialog(this, "Selecione uma janela de imagem antes de aplicar o filtro.");
     }
     }//GEN-LAST:event_jMenuItem1ActionPerformed
+
+    private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
+        String input = JOptionPane.showInputDialog(this, "Digite o w_max para o lote do Espaço YIQ colorido:", "Filtro YIQ em Lote", JOptionPane.QUESTION_MESSAGE);
+        if(input == null || input.trim().isEmpty()) return;
+
+        int wMaxEscolhido = Integer.parseInt(input.trim());
+
+        Tela_Aplicacao_Lote_ Tela = new Tela_Aplicacao_Lote_();
+        Tela.Segmentacao_tipo = 4; // ID do Filtro Adaptativo YIQ Colorido
+        Tela.wMax = wMaxEscolhido; // Passa o tamanho da vizinhança
+        Tela.setLocationRelativeTo(null);
+        Tela.setVisible(true);
+    }//GEN-LAST:event_jMenuItem2ActionPerformed
     private void abrirJanelaInternaYIQ(String titulo, BufferedImage img) {
         JLabel label = new JLabel(new javax.swing.ImageIcon(img));
         JScrollPane scroll = new JScrollPane(label);
