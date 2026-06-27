@@ -109,6 +109,38 @@ public class AdaptiveMedianFilterGlobal {
         
         return saida;
     }
+    
+    public static BufferedImage AdaptiveMedianCorGlobal(BufferedImage Image, int wMax) {
+        int largura = Image.getWidth();
+        int altura = Image.getHeight();
+        
+        // 1. Converte a imagem RGB para matriz double pura 
+        double[][][] matrizYIQ = ColorSpace_YIQ.converterRGBparaYIQMatriz(Image);
+        
+        // 2. Isola o Canal Y em uma estrutura de BufferedImage em tons de cinza
+        BufferedImage canalYIsolado = new BufferedImage(largura, altura, BufferedImage.TYPE_BYTE_GRAY);
+        for (int i = 0; i < largura; i++) {
+            for (int j = 0; j < altura; j++) {
+                int yInt = (int) Math.max(0, Math.min(255, Math.round(matrizYIQ[i][j][0])));
+                int pixelCinza = (0xFF << 24) | (yInt << 16) | (yInt << 8) | yInt;
+                canalYIsolado.setRGB(i, j, pixelCinza);
+            }
+        }
+        
+        // 3. Executa a filtragem com a Abordagem Global Otimizada no canal Y isolado
+        BufferedImage canalYFiltrado = adaptiveMedianCinza(canalYIsolado, wMax);
+        
+        // 4. Devolve os dados limpos de luminância para a matriz original, preservando I e Q
+        for (int i = 0; i < largura; i++) {
+            for (int j = 0; j < altura; j++) {
+                double yLimpo = canalYFiltrado.getRGB(i, j) & 0xFF;
+                matrizYIQ[i][j][0] = yLimpo;
+            }
+        }
+        
+        // 5. Retorna para o espaço RGB reconstituído
+        return ColorSpace_YIQ.converterYIQMatrizParaRGB(matrizYIQ);
+    }
 }
 
 

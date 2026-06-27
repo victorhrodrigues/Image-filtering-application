@@ -377,6 +377,12 @@ public class Tela_Aplicacao_Lote_ extends javax.swing.JFrame {
                                         // Filtro Adaptativo Colorido (Canal Y do Espaço YIQ)
                                         Img_Processada = Processamento_Imagem_.FiltrarEConvertYIQ(Img_original, wMax);
                                     }
+                                    else if (Segmentacao_tipo == 5 ){
+                                        Img_Processada = Processamento_Imagem_.FiltrarEConvertYIQGlobal(Img_original, wMax);
+                                    }
+                                    else if (Segmentacao_tipo == 6) {
+                                        Img_Processada = Processamento_Imagem_.AdaptiveMedianCinzaGlobal(Img_original, wMax);
+                                    }
                                 }        
                                 
                                 // Correção do sistema de remoção de extensão para nomeclatura de arquivo     
@@ -394,6 +400,11 @@ public class Tela_Aplicacao_Lote_ extends javax.swing.JFrame {
                                 } else if (Segmentacao_tipo == 4) {
                                     // Filtro Adaptativo Colorido YIQ: ex _AdaptiveMedian39x39YIQ
                                     sufixoTecnica = "_AdaptiveMedian" + wMax + "x" + wMax + "YIQ";
+                                } else if (Segmentacao_tipo == 5) {
+                                    sufixoTecnica = "_AdaptiveMedian" + wMax + "x" + wMax + "GlobalYIQ";
+                                } else if (Segmentacao_tipo == 6) {
+                                    // NOVO SUFIXO: Padroniza a saída do global cinza
+                                    sufixoTecnica = "_AdaptiveMedian" + wMax + "x" + wMax + "Global";
                                 }
                                 
                                 // Salva a imagem processada.

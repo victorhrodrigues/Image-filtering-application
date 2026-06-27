@@ -78,6 +78,9 @@ public class Tela_Principal_ extends javax.swing.JFrame {
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenuItem2 = new javax.swing.JMenuItem();
         jMenuItem10 = new javax.swing.JMenuItem();
+        jMenu6 = new javax.swing.JMenu();
+        jMenuItem11 = new javax.swing.JMenuItem();
+        jMenuItem13 = new javax.swing.JMenuItem();
         Menu_Segmentacao_ = new javax.swing.JMenu();
         Binarizacao_Otsu_ = new javax.swing.JMenu();
         Aplicar_Otsu_Imagem_ = new javax.swing.JMenuItem();
@@ -247,6 +250,11 @@ public class Tela_Principal_ extends javax.swing.JFrame {
 
         jMenuItem4.setFont(new java.awt.Font("Cambria", 1, 14)); // NOI18N
         jMenuItem4.setText("Aplicar em Lote");
+        jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem4ActionPerformed(evt);
+            }
+        });
         jMenu5.add(jMenuItem4);
 
         Menu_Skin_Detection_.add(jMenu5);
@@ -288,6 +296,29 @@ public class Tela_Principal_ extends javax.swing.JFrame {
             }
         });
         Menu_Adaptative_Color_.add(jMenuItem10);
+
+        jMenu6.setText("Median Filter Adaptive Global Color");
+        jMenu6.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+
+        jMenuItem11.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        jMenuItem11.setText("Aplica na imagem");
+        jMenuItem11.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem11ActionPerformed(evt);
+            }
+        });
+        jMenu6.add(jMenuItem11);
+
+        jMenuItem13.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        jMenuItem13.setText("Aplicar em lote");
+        jMenuItem13.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem13ActionPerformed(evt);
+            }
+        });
+        jMenu6.add(jMenuItem13);
+
+        Menu_Adaptative_Color_.add(jMenu6);
 
         Menus.add(Menu_Adaptative_Color_);
 
@@ -992,6 +1023,127 @@ public class Tela_Principal_ extends javax.swing.JFrame {
         Tela.setLocationRelativeTo(null);
         Tela.setVisible(true);
     }//GEN-LAST:event_jMenuItem2ActionPerformed
+
+    private void jMenuItem11ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem11ActionPerformed
+        // 1. Identifica a janela interna ativamente selecionada pelo usuário
+        JInternalFrame janelaAtiva = jDesktopPane1.getSelectedFrame();
+
+        if (janelaAtiva != null) {
+            // 2. Solicita o tamanho máximo da janela (w_max) para o processamento global
+            String input = JOptionPane.showInputDialog(this, 
+                    "Digite o tamanho máximo da janela (w_max) para a Abordagem Global YIQ:\n(Ex: 39 para ruídos intensos)", 
+                    "Configuração - Filtro Adaptativo Global Colorido", 
+                    JOptionPane.QUESTION_MESSAGE);
+
+            if (input == null || input.trim().isEmpty()) {
+                return; 
+            }
+
+            // 3. Validação matemática do input
+            int wMaxEscolhido;
+            try {
+                wMaxEscolhido = Integer.parseInt(input.trim());
+
+                if (wMaxEscolhido < 3 || wMaxEscolhido % 2 == 0) {
+                    JOptionPane.showMessageDialog(this, "O tamanho da janela deve ser um número ÍMPAR maior ou igual a 3!", "Erro de Validação", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Por favor, digite um número inteiro válido!", "Erro de Formato", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // 4. Execução do pipeline adaptativo global no domínio YIQ
+            try {
+                JScrollPane scrollPane = (JScrollPane) janelaAtiva.getContentPane().getComponent(0);
+                JLabel label = (JLabel) scrollPane.getViewport().getView();
+
+                // Extração universal e segura do ícone da tela (evita ClassCastException)
+                javax.swing.Icon icon = label.getIcon();
+                BufferedImage imagemOriginal;
+
+                if (icon instanceof BufferedImage) {
+                    imagemOriginal = (BufferedImage) icon;
+                } else {
+                    imagemOriginal = new BufferedImage(icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_RGB);
+                    java.awt.Graphics g = imagemOriginal.createGraphics();
+                    icon.paintIcon(null, g, 0, 0);
+                    g.dispose();
+                }
+
+                // Invoca a fachada chamando o novo filtro global colorido
+                this.Img_processada_atual = Processamento_Imagem_.FiltrarEConvertYIQGlobal(imagemOriginal, wMaxEscolhido);
+
+                // 5. Exibe graficamente o resultado final limpo em uma nova Janela Interna
+                JLabel novoLabel = new JLabel(new javax.swing.ImageIcon(this.Img_processada_atual));
+                JScrollPane novoScroll = new JScrollPane(novoLabel);
+
+                JInternalFrame novaJanela = new JInternalFrame("Filtro YIQ Global (w_max=" + wMaxEscolhido + ") - " + janelaAtiva.getTitle(), true, true, true, true);
+                novaJanela.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
+                novaJanela.setSize(this.Img_processada_atual.getWidth(), this.Img_processada_atual.getHeight());
+                novaJanela.getContentPane().add(novoScroll);
+                novaJanela.setVisible(true);
+
+                jDesktopPane1.add(novaJanela);
+                novaJanela.setSelected(true); // Foca na nova janela resultante
+
+                // Atualiza os buffers globais para persistência do arquivo
+                this.Img_final_atual = this.Img_processada_atual;
+
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Erro ao processar o Filtro Adaptativo Global Colorido YIQ!");
+                Logger.getLogger(Tela_Principal_.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Por favor, clique e selecione uma janela de imagem antes de aplicar o filtro.");
+        }
+    }//GEN-LAST:event_jMenuItem11ActionPerformed
+
+    private void jMenuItem13ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem13ActionPerformed
+        String input = JOptionPane.showInputDialog(this, "Digite o w_max para o lote Adaptativo Global YIQ:", "Filtro Global Lote", JOptionPane.QUESTION_MESSAGE);
+        if(input == null || input.trim().isEmpty()) return;
+
+        int wMaxEscolhido = Integer.parseInt(input.trim());
+
+        Tela_Aplicacao_Lote_ Tela = new Tela_Aplicacao_Lote_();
+        Tela.Segmentacao_tipo = 5; // ID para o Adaptativo Global Colorido
+        Tela.wMax = wMaxEscolhido;
+        Tela.Metodo_nome = "_AdaptiveMedianGlobal" + wMaxEscolhido + "x" + wMaxEscolhido + "YIQ";
+        Tela.setLocationRelativeTo(null);
+        Tela.setVisible(true);   
+    }//GEN-LAST:event_jMenuItem13ActionPerformed
+
+    private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem4ActionPerformed
+        String input = JOptionPane.showInputDialog(this, 
+                "Digite o tamanho máximo da janela (w_max) para o lote Adaptativo Global Cinza:\n(Ex: 39 para ruídos intensos)", 
+                "Configuração - Filtro Global Cinza em Lote", 
+                JOptionPane.QUESTION_MESSAGE);
+
+        if (input == null || input.trim().isEmpty()) {
+            return; 
+        }
+
+        // 2. Validação matemática do input
+        int wMaxEscolhido;
+        try {
+            wMaxEscolhido = Integer.parseInt(input.trim());
+
+            if (wMaxEscolhido < 3 || wMaxEscolhido % 2 == 0) {
+                JOptionPane.showMessageDialog(this, "O tamanho da janela deve ser um número ÍMPAR maior ou igual a 3!", "Erro de Validação", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Por favor, digite um número inteiro válido!", "Erro de Formato", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // 3. Instancia a tela de lote configurando os gatilhos para o Global Cinza
+        Tela_Aplicacao_Lote_ Tela = new Tela_Aplicacao_Lote_();
+        Tela.Segmentacao_tipo = 6; // Atribuímos o ID único 6 para o Adaptativo Global Cinza
+        Tela.wMax = wMaxEscolhido; // Passa o tamanho da vizinhança digitada
+        Tela.setLocationRelativeTo(null);
+        Tela.setVisible(true);        // TODO add your handling code here:
+    }//GEN-LAST:event_jMenuItem4ActionPerformed
     private void abrirJanelaInternaYIQ(String titulo, BufferedImage img) {
         JLabel label = new JLabel(new javax.swing.ImageIcon(img));
         JScrollPane scroll = new JScrollPane(label);
@@ -1072,9 +1224,12 @@ public class Tela_Principal_ extends javax.swing.JFrame {
     private javax.swing.JMenu jMenu3;
     private javax.swing.JMenu jMenu4;
     private javax.swing.JMenu jMenu5;
+    private javax.swing.JMenu jMenu6;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem10;
+    private javax.swing.JMenuItem jMenuItem11;
     private javax.swing.JMenuItem jMenuItem12;
+    private javax.swing.JMenuItem jMenuItem13;
     private javax.swing.JMenuItem jMenuItem14;
     private javax.swing.JMenuItem jMenuItem15;
     private javax.swing.JMenuItem jMenuItem2;

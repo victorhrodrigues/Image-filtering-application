@@ -80,4 +80,8 @@ public class Processamento_Imagem_ {
             return AdaptiveMedianFilter.AdaptiveMedianCor(CriaCopia(Imagem), wMax);
         }
         
+        public static BufferedImage FiltrarEConvertYIQGlobal(BufferedImage Imagem, int wMax) {
+            return AdaptiveMedianFilterGlobal.AdaptiveMedianCorGlobal(CriaCopia(Imagem), wMax);
+        }
+        
 }
